@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aulia Frozen Tanara | Kasir Digital</title>
+    
+    <!-- Icons & Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- 1. CONFIG (WARNA & VARIABEL) --- */
+        :root {
+            --bg-body: #141418;       /* Hitam Arang */
+            --bg-panel: #1f2029;      /* Abu Gelap */
+            --primary: #ff7551;       /* Orange Coral */
+            --primary-glow: rgba(255, 117, 81, 0.4);
+            --danger: #ff4b4b;        /* Merah */
+            --text-main: #ffffff;
+            --text-muted: #adb5bd;
+            --border: #2d303e;
+            --radius-xl: 24px;
+            --radius-md: 16px;
+            --shadow-card: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- 2. SIDEBAR KIRI --- */
+        .sidebar {
+            width: 110px;
+            height: 100%;
+            background: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 10px;
+            border-right: 1px solid var(--border);
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .profile-section {
+            display: flex; flex-direction: column; align-items: center; margin-bottom: 40px; text-align: center;
+        }
+
+        .logo-wrapper {
+            position: relative; width: 70px; height: 70px; margin-bottom: 10px; cursor: pointer;
+        }
+
+        .logo-container {
+            width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+            border: 2px solid var(--primary); padding: 2px; background: white;
+            box-shadow: 0 0 15px var(--primary-glow); transition: 0.3s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .logo-container:hover { transform: scale(1.05); border-color: white; }
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        .logo-edit-icon {
+            position: absolute; bottom: 0; right: 0; background: var(--primary); color: white;
+            width: 24px; height: 24px; border-radius: 50%; display: flex; justify-content: center;
+            align-items: center; font-size: 0.7rem; border: 2px solid var(--bg-panel); pointer-events: none;
+        }
+
+        .shop-address { font-size: 0.65rem; color: var(--text-muted); line-height: 1.2; }
+        .shop-address i { color: var(--primary); margin-right: 2px; }
+
+        .nav-btn {
+            width: 50px; height: 50px; border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            color: var(--text-muted); font-size: 1.2rem; margin-bottom: 15px;
+            cursor: pointer; transition: 0.3s; text-decoration: none; position: relative;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--primary); color: white;
+            box-shadow: 0 5px 15px var(--primary-glow); transform: translateY(-2px);
+        }
+        .nav-btn::after {
+            content: attr(data-title); position: absolute; left: 70px; 
+            background: white; color: black; padding: 5px 10px; border-radius: 5px; 
+            font-size: 0.8rem; font-weight: 600; opacity: 0; visibility: hidden; pointer-events: none;
+            transition: 0.2s; white-space: nowrap; z-index: 100;
+        }
+        .nav-btn:hover::after { opacity: 1; visibility: visible; left: 60px; }
+
+        /* --- 3. AREA UTAMA (TENGAH) --- */
+        .main-area {
+            flex: 1; padding: 0 40px; overflow-y: auto; position: relative; scrollbar-width: thin;
+        }
+
+        header {
+            padding: 30px 0; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; background: var(--bg-body); z-index: 5;
+        }
+        .welcome-text h1 { font-size: 1.8rem; font-weight: 600; }
+        .welcome-text p { color: var(--text-muted); font-size: 0.9rem; margin-top: 5px; }
+
+        .search-bar {
+            background: var(--bg-panel); padding: 12px 20px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px; width: 300px;
+            border: 1px solid var(--border); transition: 0.3s;
+        }
+        .search-bar:focus-within { border-color: var(--primary); box-shadow: 0 0 10px var(--primary-glow); }
+        .search-bar input { background: transparent; border: none; outline: none; color: white; width: 100%; }
+
+        /* --- HERO SLIDER (BANNER BARU YANG MENARIK) --- */
+        .hero-slider {
+            position: relative; width: 100%; height: 220px;
+            border-radius: var(--radius-xl); overflow: hidden; margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .slide {
+            position: absolute; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            opacity: 0; transition: opacity 1s ease-in-out;
+            display: flex; flex-direction: column; justify-content: center; padding: 40px;
+        }
+        
+        .slide.active { opacity: 1; }
+
+        /* Overlay Gradien agar tulisan terbaca */
+        .slide::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(0,0,0,0.2));
+            z-index: 1;
+        }
+
+        .slide-content { position: relative; z-index: 2; max-width: 500px; animation: slideUp 0.8s ease; }
+        .slide-content h2 { font-size: 2rem; margin-bottom: 10px; color: white; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .slide-content p { color: #ddd; margin-bottom: 20px; font-size: 1rem; }
+        
+        .hero-btn {
+            background: var(--primary); color: white; border: none; padding: 10px 25px;
+            border-radius: 30px; font-weight: 600; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 5px 15px var(--primary-glow);
+        }
+        .hero-btn:hover { transform: translateY(-3px); background: #ff5e3a; }
+
+        /* Kategori Tabs */
+        .category-scroll { display: flex; gap: 15px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 10px; }
+        .cat-pill {
+            padding: 10px 25px; background: var(--bg-panel); border-radius: 30px;
+            color: var(--text-muted); cursor: pointer; border: 1px solid var(--border);
+            transition: 0.3s; white-space: nowrap; font-weight: 500;
+        }
+        .cat-pill:hover, .cat-pill.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+            box-shadow: 0 5px 15px var(--primary-glow);
+        }
+
+        /* Grid Produk */
+        .products-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 25px; padding-bottom: 50px;
+        }
+
+        .product-card {
+            background: var(--bg-panel); border-radius: var(--radius-xl); padding: 20px;
+            text-align: center; position: relative; transition: 0.4s; cursor: pointer;
+            border: 1px solid transparent; overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-10px); background: #2a2b36;
+            border-color: rgba(255, 255, 255, 0.1); box-shadow: var(--shadow-card);
+        }
+
+        .img-container {
+            width: 140px; height: 140px; margin: 0 auto 15px auto; border-radius: 50%;
+            overflow: hidden; border: 3px solid rgba(255,255,255,0.05); position: relative;
+        }
+        .img-container img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .product-card:hover img { transform: scale(1.1); }
+
+        .p-name { font-weight: 600; font-size: 1.1rem; margin-bottom: 5px; }
+        .p-price { color: var(--primary); font-weight: 700; font-size: 1rem; }
+        
+        .btn-add-float {
+            position: absolute; bottom: 15px; right: 15px; width: 35px; height: 35px;
+            background: var(--text-main); color: var(--bg-panel); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; transform: scale(0.5); transition: 0.3s;
+        }
+        .product-card:hover .btn-add-float { opacity: 1; transform: scale(1); }
+
+        .btn-edit-card {
+            position: absolute; top: 15px; right: 15px; width: 30px; height: 30px;
+            background: rgba(255,255,255,0.1); color: var(--text-muted); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+            z-index: 2; transition: 0.3s;
+        }
+        .btn-edit-card:hover { background: var(--primary); color: white; }
+
+        /* --- 4. PANEL KERANJANG KANAN --- */
+        .cart-panel {
+            width: 400px; background: var(--bg-panel); padding: 30px;
+            display: flex; flex-direction: column; border-left: 1px solid var(--border); flex-shrink: 0;
+        }
+        .cart-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .cart-list { flex: 1; overflow-y: auto; padding-right: 5px; scrollbar-width: thin; }
+        
+        .cart-item {
+            background: var(--bg-body); border-radius: var(--radius-md); padding: 15px;
+            display: flex; align-items: center; gap: 15px; margin-bottom: 15px; border: 1px solid var(--border);
+        }
+        .cart-item img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; }
+        .item-info h4 { font-size: 0.95rem; margin-bottom: 3px; }
+        .item-info small { color: var(--text-muted); }
+        .qty-box {
+            display: flex; align-items: center; gap: 8px; background: var(--bg-panel);
+            padding: 5px 10px; border-radius: 8px;
+        }
+        .qty-act { cursor: pointer; font-weight: bold; color: var(--primary); user-select: none; }
+        .checkout-box { margin-top: 20px; border-top: 2px dashed var(--border); padding-top: 20px; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--text-muted); }
+        .price-row.total { color: white; font-size: 1.3rem; font-weight: 700; margin-top: 15px; }
+        .btn-checkout {
+            width: 100%; background: var(--primary); color: white; padding: 15px; border-radius: 15px;
+            border: none; font-size: 1rem; font-weight: 600; cursor: pointer;
+            margin-top: 20px; box-shadow: 0 5px 20px var(--primary-glow); transition: 0.3s;
+        }
+        .btn-checkout:hover { transform: translateY(-3px); }
+
+        /* --- 5. MODAL FORM --- */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-box { 
+            background: var(--bg-panel); padding: 30px; border-radius: var(--radius-xl); 
+            width: 450px; border: 1px solid var(--border); 
+            animation: slideUp 0.3s ease; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .modal-header { margin-bottom: 20px; text-align: center; }
+        .modal-header h3 { color: var(--text-main); font-size: 1.5rem; margin-bottom: 5px; }
+        .modal-header p { color: var(--text-muted); font-size: 0.9rem; }
+
+        .image-preview-box {
+            width: 100px; height: 100px; background: var(--bg-body); border-radius: 15px;
+            margin: 0 auto 20px auto; overflow: hidden; border: 2px dashed var(--border);
+            display: flex; justify-content: center; align-items: center;
+        }
+        .image-preview-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .full-width { grid-column: span 2; }
+        .form-group label { display: block; color: var(--text-muted); font-size: 0.8rem; margin-bottom: 5px; }
+        .form-input { 
+            width: 100%; padding: 12px; background: var(--bg-body); 
+            border: 1px solid var(--border); color: white; border-radius: 10px; 
+            outline: none; transition: 0.3s;
+        }
+        .form-input:focus { border-color: var(--primary); background: #1a1a20; }
+
+        .modal-footer { display: flex; gap: 10px; margin-top: 25px; }
+        .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 12px; border-radius: 10px; cursor: pointer; }
+        .btn-save { flex: 1; background: var(--primary); border: none; color: white; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .btn-delete { 
+            background: rgba(255, 75, 75, 0.1); border: 1px solid var(--danger); 
+            color: var(--danger); padding: 10px; border-radius: 10px; 
+            cursor: pointer; width: 100%; margin-top: 15px; display: none; font-size: 0.9rem; transition: 0.2s;
+        }
+        .btn-delete:hover { background: var(--danger); color: white; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .sidebar { width: 100%; height: auto; flex-direction: row; justify-content: space-around; padding: 10px; position: fixed; bottom: 0; background: rgba(31, 32, 41, 0.95); backdrop-filter: blur(10px); }
+            .profile-section { display: none; }
+            .main-area { padding: 0 20px 80px 20px; overflow: visible; }
+            .cart-panel { width: 100%; padding: 20px; }
+            .modal-box { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. SIDEBAR -->
+    <nav class="sidebar">
+        <div class="profile-section">
+            <div class="logo-wrapper" onclick="document.getElementById('logoInput').click()" title="Klik untuk Ganti Logo">
+                <div class="logo-container">
+                    <img id="logoImg" src="image_dc4857.jpg" alt="Logo" onerror="this.src='https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80'">
+                </div>
+                <div class="logo-edit-icon"><i class="fas fa-camera"></i></div>
+                <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="updateLogo(this)">
+            </div>
+            <div class="shop-address"><i class="fas fa-map-marker-alt"></i> Tanara, Serang,<br>Banten</div>
+        </div>
+        
+        <div class="nav-btn active" onclick="filterCategory('all', null)" data-title="Semua"><i class="fas fa-utensils"></i></div>
+        <div class="nav-btn" onclick="filterCategory('Nugget', null)" data-title="Nugget"><i class="fas fa-drumstick-bite"></i></div>
+        <div class="nav-btn" onclick="filterCategory('Sosis', null)" data-title="Sosis"><i class="fas fa-hotdog"></i></div>
+        <div class="nav-btn" onclick="filterCategory('Daging', null)" data-title="Daging"><i class="fas fa-bacon"></i></div>
+        <div class="nav-btn" onclick="filterCategory('Snack', null)" data-title="Snack"><i class="fas fa-cookie-bite"></i></div>
+        
+        <div style="flex:1"></div>
+
+        <a href="https://wa.me/6281234567890" target="_blank" class="nav-btn" data-title="WhatsApp" style="color:#25D366"><i class="fab fa-whatsapp"></i></a>
+        
+        <!-- LINK FACEBOOK DITAMBAHKAN DI SINI -->
+        <a href="https://www.facebook.com/profile.php?id=61556993809228" target="_blank" class="nav-btn" data-title="Facebook" style="color:#1877F2">
+            <i class="fab fa-facebook"></i>
+        </a>
+
+        <div class="nav-btn" onclick="openModal()" data-title="Tambah Menu" style="margin-bottom: 60px;"><i class="fas fa-plus"></i></div>
+    </nav>
+
+    <!-- 2. AREA UTAMA -->
+    <main class="main-area">
+        <header>
+            <div class="welcome-text">
+                <h1>Aulia Frozen Tanara</h1>
+                <p id="dateNow">Memuat tanggal...</p>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search" style="color: #666"></i>
+                <input type="text" placeholder="Cari Nugget, Sosis..." onkeyup="searchProduct(this.value)">
+            </div>
+        </header>
+
+        <!-- HERO SLIDER (BANNER BARU) -->
+        <div class="hero-slider">
+            <!-- Slide 1 -->
+            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=1000&q=80');">
+                <div class="slide-content">
+                    <h2>Aneka Nugget Hemat!</h2>
+                    <p>Stok nugget Kanzler dan Fiesta sedang diskon. Cocok untuk bekal anak.</p>
+                    <button class="hero-btn" onclick="filterCategory('Nugget', null)">Lihat Produk</button>
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1000&q=80');">
+                <div class="slide-content">
+                    <h2>Sosis Bakar Jumbo</h2>
+                    <p>Sosis premium dengan rasa daging asli. Langsung goreng atau bakar.</p>
+                    <button class="hero-btn" onclick="filterCategory('Sosis', null)">Pesan Sekarang</button>
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1551024601-bec78aea704b?w=1000&q=80');">
+                <div class="slide-content">
+                    <h2>Dessert Manis?</h2>
+                    <p>Ada juga varian es krim dan camilan manis lainnya.</p>
+                    <button class="hero-btn" onclick="filterCategory('Snack', null)">Cek Snack</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-scroll">
+            <div class="cat-pill active" onclick="filterCategory('all', this)">🔥 Semua</div>
+            <div class="cat-pill" onclick="filterCategory('Nugget', this)">🍗 Nugget</div>
+            <div class="cat-pill" id="btnSosis" onclick="filterCategory('Sosis', this)">🌭 Sosis</div>
+            <div class="cat-pill" onclick="filterCategory('Daging', this)">🥩 Daging</div>
+            <div class="cat-pill" onclick="filterCategory('Snack', this)">🍟 Snack</div>
+        </div>
+
+        <div class="products-grid" id="productContainer"></div>
+    </main>
+
+    <!-- 3. KERANJANG -->
+    <aside class="cart-panel">
+        <div class="cart-title">
+            <span>Keranjang</span>
+            <span style="font-size:0.9rem; background:#333; padding:5px 10px; border-radius:10px; margin-left:auto; color:var(--primary)" id="countBadge">0</span>
+        </div>
+        <div class="cart-list" id="cartList">
+            <div style="text-align:center; margin-top:50px; color:var(--text-muted)">
+                <i class="fas fa-basket-shopping" style="font-size:3rem; margin-bottom:15px; opacity:0.3"></i>
+                <p>Masih kosong.</p>
+            </div>
+        </div>
+        <div class="checkout-box">
+            <div class="price-row"><span>Subtotal</span><span id="subTotal">Rp 0</span></div>
+            <div class="price-row total"><span>Total</span><span id="grandTotal" style="color: var(--primary)">Rp 0</span></div>
+            <button class="btn-checkout" onclick="checkoutWA()"><i class="fab fa-whatsapp"></i> Pesan Sekarang</button>
+        </div>
+    </aside>
+
+    <!-- 4. MODAL FORM -->
+    <div class="modal" id="productModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalTitle">Tambah Menu Baru</h3>
+                <p id="modalDesc">Tambahkan menu baru ke toko.</p>
+            </div>
+            <form onsubmit="saveProduct(event)">
+                <input type="hidden" id="editId">
+                <div class="image-preview-box">
+                    <img id="previewImg" src="https://via.placeholder.com/100" alt="Preview">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>Nama Produk</label>
+                        <input type="text" id="pName" class="form-input" placeholder="Contoh: Nugget Kanzler" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori</label>
+                        <select id="pCat" class="form-input">
+                            <option value="Nugget">Nugget</option>
+                            <option value="Sosis">Sosis</option>
+                            <option value="Daging">Daging</option>
+                            <option value="Snack">Snack</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Harga (Rp)</label>
+                        <input type="number" id="pPrice" class="form-input" placeholder="25000" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Link Gambar URL</label>
+                        <input type="text" id="pImg" class="form-input" placeholder="https://..." oninput="document.getElementById('previewImg').src = this.value || 'https://via.placeholder.com/100'">
+                    </div>
+                </div>
+                <button type="button" class="btn-delete" id="btnDelete" onclick="deleteProduct()"><i class="fas fa-trash"></i> Hapus Menu Ini</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                    <button type="submit" class="btn-save">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // --- 1. SLIDER OTOMATIS ---
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        // Ganti gambar setiap 5 detik
+        setInterval(nextSlide, 5000);
+
+        // --- 2. DATA PRODUK ---
+        const defaultProducts = [
+            { id: 1, name: "Nugget Kanzler", category: "Nugget", price: 45000, img: "https://images.unsplash.com/photo-1569691105751-88df003de7a4?w=500&q=80" },
+            { id: 2, name: "Sosis Kanzler Beef", category: "Sosis", price: 48000, img: "https://images.unsplash.com/photo-1585325701165-351af92f9656?w=500&q=80" },
+            { id: 3, name: "Daging Slice 500g", category: "Daging", price: 65000, img: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=500&q=80" },
+            { id: 4, name: "Kentang Goreng", category: "Snack", price: 28000, img: "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=500&q=80" },
+            { id: 5, name: "Dimsum Ayam", category: "Snack", price: 35000, img: "https://images.unsplash.com/photo-1496116218417-1a781b1c423c?w=500&q=80" },
+            { id: 6, name: "Bakso Sapi", category: "Daging", price: 40000, img: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=500&q=80" }
+        ];
+
+        let products = JSON.parse(localStorage.getItem('frozenDataV4')) || defaultProducts;
+        let cart = [];
+        const container = document.getElementById('productContainer');
+
+        function render(data = products) {
+            container.innerHTML = '';
+            data.forEach(p => {
+                const img = p.img || 'https://via.placeholder.com/150';
+                container.innerHTML += `
+                    <div class="product-card" onclick="addToCart(${p.id})">
+                        <div class="btn-edit-card" onclick="openEditModal(${p.id}, event)" title="Edit Menu"><i class="fas fa-pen"></i></div>
+                        <div class="img-container"><img src="${img}" alt="${p.name}"></div>
+                        <div class="p-name">${p.name}</div>
+                        <div class="p-price">Rp ${p.price.toLocaleString('id-ID')}</div>
+                        <div class="btn-add-float"><i class="fas fa-plus"></i></div>
+                    </div>
+                `;
+            });
+        }
+        render();
+
+        // --- 3. MODAL LOGIC ---
+        function openModal() {
+            document.getElementById('productModal').style.display = 'flex';
+            document.getElementById('modalTitle').innerText = 'Tambah Menu Baru';
+            document.getElementById('modalDesc').innerText = 'Tambahkan produk baru ke katalog.';
+            document.getElementById('editId').value = ''; 
+            document.getElementById('pName').value = '';
+            document.getElementById('pPrice').value = '';
+            document.getElementById('pImg').value = '';
+            document.getElementById('previewImg').src = 'https://via.placeholder.com/100';
+            document.getElementById('btnDelete').style.display = 'none';
+        }
+
+        function openEditModal(id, event) {
+            event.stopPropagation();
+            const p = products.find(item => item.id === id);
+            document.getElementById('productModal').style.display = 'flex';
+            document.getElementById('modalTitle').innerText = 'Edit Menu';
+            document.getElementById('modalDesc').innerText = 'Ubah detail produk ini.';
+            document.getElementById('editId').value = p.id;
+            document.getElementById('pName').value = p.name;
+            document.getElementById('pCat').value = p.category;
+            document.getElementById('pPrice').value = p.price;
+            document.getElementById('pImg').value = p.img;
+            document.getElementById('previewImg').src = p.img || 'https://via.placeholder.com/100';
+            document.getElementById('btnDelete').style.display = 'block';
+        }
+
+        function closeModal() { document.getElementById('productModal').style.display = 'none'; }
+
+        function saveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const name = document.getElementById('pName').value;
+            const cat = document.getElementById('pCat').value;
+            const price = parseInt(document.getElementById('pPrice').value);
+            const img = document.getElementById('pImg').value;
+
+            if(id) {
+                const index = products.findIndex(p => p.id == id);
+                if(index !== -1) products[index] = { ...products[index], name, category: cat, price, img };
+            } else {
+                const newItem = { id: Date.now(), name, category: cat, price, img };
+                products.push(newItem);
+            }
+            localStorage.setItem('frozenDataV4', JSON.stringify(products));
+            render(); closeModal(); cart = []; updateCart();
+        }
+
+        function deleteProduct() {
+            const id = document.getElementById('editId').value;
+            if(confirm('Yakin ingin menghapus menu ini?')) {
+                products = products.filter(p => p.id != id);
+                localStorage.setItem('frozenDataV4', JSON.stringify(products));
+                render(); closeModal(); cart = []; updateCart();
+            }
+        }
+
+        // --- 4. KERANJANG LOGIC ---
+        function addToCart(id) {
+            const item = products.find(p => p.id === id);
+            const exist = cart.find(c => c.id === id);
+            if(exist) exist.qty++; else cart.push({...item, qty:1});
+            updateCart();
+        }
+
+        function updateCart() {
+            const list = document.getElementById('cartList');
+            if(cart.length === 0) {
+                list.innerHTML = `<div style="text-align:center; margin-top:50px; color:var(--text-muted)"><i class="fas fa-basket-shopping" style="font-size:3rem; margin-bottom:15px; opacity:0.3"></i><p>Masih kosong.</p></div>`;
+                document.getElementById('subTotal').innerText = 'Rp 0';
+                document.getElementById('grandTotal').innerText = 'Rp 0';
+                document.getElementById('countBadge').innerText = '0';
+                return;
+            }
+            list.innerHTML = '';
+            let total = 0; let count = 0;
+            cart.forEach(c => {
+                total += c.price * c.qty; count += c.qty;
+                list.innerHTML += `
+                    <div class="cart-item">
+                        <img src="${c.img || 'https://via.placeholder.com/50'}" alt="">
+                        <div class="item-info" style="flex:1"><h4>${c.name}</h4><small>Rp ${c.price.toLocaleString('id-ID')}</small></div>
+                        <div class="qty-box"><div class="qty-act" onclick="changeQty(${c.id}, -1)">-</div><span>${c.qty}</span><div class="qty-act" onclick="changeQty(${c.id}, 1)">+</div></div>
+                    </div>`;
+            });
+            document.getElementById('subTotal').innerText = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('grandTotal').innerText = 'Rp ' + total.toLocaleString('id-ID');
+            document.getElementById('countBadge').innerText = count;
+        }
+
+        function changeQty(id, delta) {
+            const item = cart.find(c => c.id === id);
+            if(item) {
+                item.qty += delta;
+                if(item.qty <= 0) cart = cart.filter(c => c.id !== id);
+                updateCart();
+            }
+        }
+
+        // --- 5. UTILITY ---
+        function filterCategory(cat, btn) {
+            document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            if(cat === 'all') render(products); else render(products.filter(p => p.category === cat));
+        }
+        function searchProduct(val) { render(products.filter(p => p.name.toLowerCase().includes(val.toLowerCase()))); }
+        function checkoutWA() {
+            if(cart.length === 0) return alert("Keranjang kosong!");
+            let msg = "Halo Aulia Frozen Tanara, order:%0A%0A";
+            let total = 0;
+            cart.forEach(c => { msg += `- ${c.name} (${c.qty}x) : Rp ${(c.price*c.qty).toLocaleString('id-ID')}%0A`; total += c.price * c.qty; });
+            msg += `%0A*Total: Rp ${total.toLocaleString('id-ID')}*`;
+            window.open(`https://wa.me/6281234567890?text=${msg}`, '_blank');
+        }
+        function updateLogo(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('logoImg').src = e.target.result; }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        const dateOpt = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        document.getElementById('dateNow').innerText = new Date().toLocaleDateString('id-ID', dateOpt);
+    </script>
+</body>
+</html>
