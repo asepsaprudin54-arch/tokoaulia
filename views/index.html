@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aulia Frozen Tanara | Server Mode</title>
+    <!-- Icons & Fonts -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS SAMA SEPERTI SEBELUMNYA (Dipersingkat agar muat) */
+        :root { --bg-body: #141418; --bg-panel: #1f2029; --primary: #ff7551; --text-main: #fff; --text-muted: #adb5bd; --border: #2d303e; --radius: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; overflow: hidden; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 110px; background: var(--bg-panel); display: flex; flex-direction: column; align-items: center; padding: 30px 10px; border-right: 1px solid var(--border); }
+        .logo-container { width: 70px; height: 70px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; margin-bottom: 10px; }
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .nav-btn { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: var(--text-muted); font-size: 1.2rem; margin-bottom: 15px; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active, .nav-btn:hover { background: var(--primary); color: white; }
+        
+        /* MAIN */
+        .main-area { flex: 1; padding: 0 40px; overflow-y: auto; }
+        header { padding: 30px 0; display: flex; justify-content: space-between; }
+        .hero-slider { height: 200px; border-radius: var(--radius); background: #333; margin-bottom: 30px; position: relative; overflow: hidden; }
+        .slide { position: absolute; width: 100%; height: 100%; background-size: cover; opacity: 0; transition: 1s; }
+        .slide.active { opacity: 1; }
+        
+        /* GRID */
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; padding-bottom: 50px; }
+        .product-card { background: var(--bg-panel); border-radius: var(--radius); padding: 15px; text-align: center; position: relative; border: 1px solid transparent; }
+        .product-card:hover { border-color: var(--primary); transform: translateY(-5px); transition: 0.3s; }
+        .product-card img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; }
+        
+        /* CART */
+        .cart-panel { width: 350px; background: var(--bg-panel); padding: 20px; display: flex; flex-direction: column; border-left: 1px solid var(--border); }
+        .cart-list { flex: 1; overflow-y: auto; }
+        .cart-item { display: flex; justify-content: space-between; margin-bottom: 10px; background: var(--bg-body); padding: 10px; border-radius: 10px; }
+        .btn-checkout { width: 100%; padding: 15px; background: var(--primary); border: none; color: white; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 99; justify-content: center; align-items: center; }
+        .modal-box { background: var(--bg-panel); padding: 30px; border-radius: var(--radius); width: 400px; }
+        .form-input { width: 100%; padding: 10px; background: var(--bg-body); border: 1px solid var(--border); color: white; margin-bottom: 10px; border-radius: 8px; }
+        
+        /* ADMIN UI */
+        .admin-controls { display: none; } /* Hidden by default */
+        .show-admin .admin-controls { display: block; }
+        .btn-edit-card { position: absolute; top: 10px; right: 10px; background: #fff; color: #000; width: 25px; height: 25px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; z-index: 5; }
+    </style>
+</head>
+<body id="appBody">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+        <div class="logo-container">
+            <img src="https://via.placeholder.com/100?text=LOGO" id="logoImg">
+        </div>
+        <div style="font-size:0.7rem; color:#888; text-align:center; margin-bottom:20px;">Tanara, Serang</div>
+        
+        <div class="nav-btn active" onclick="filterCategory('all')"><i class="fas fa-utensils"></i></div>
+        <div class="nav-btn" onclick="filterCategory('Nugget')"><i class="fas fa-drumstick-bite"></i></div>
+        <div class="nav-btn" onclick="filterCategory('Sosis')"><i class="fas fa-hotdog"></i></div>
+        
+        <div style="flex:1"></div>
+        
+        <!-- Tombol Login Admin -->
+        <div class="nav-btn" onclick="openLoginModal()" title="Login Admin" style="color:var(--primary)">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        
+        <!-- Tombol Tambah (Hanya Admin) -->
+        <div class="nav-btn admin-controls" onclick="openProductModal()" title="Tambah Menu">
+            <i class="fas fa-plus"></i>
+        </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main-area">
+        <header>
+            <h1>Aulia Frozen</h1>
+            <input type="text" class="search-bar" placeholder="Cari..." onkeyup="searchProduct(this.value)" style="color:white; padding:10px; border-radius:20px; border:1px solid #333; background:#222;">
+        </header>
+
+        <div class="hero-slider">
+            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=800');"></div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800');"></div>
+        </div>
+
+        <div class="products-grid" id="container">
+            <!-- Produk dari Go Server -->
+        </div>
+    </main>
+
+    <!-- CART -->
+    <aside class="cart-panel">
+        <h3>Keranjang</h3>
+        <div class="cart-list" id="cartList"></div>
+        <h2 id="totalPrice">Rp 0</h2>
+        <button class="btn-checkout" onclick="checkout()">Pesan WA</button>
+    </aside>
+
+    <!-- LOGIN MODAL -->
+    <div class="modal" id="loginModal">
+        <div class="modal-box" style="text-align: center;">
+            <h3>Login Admin</h3>
+            <p style="color:#888; font-size:0.8rem; margin-bottom:10px;">Password: admin123</p>
+            <input type="password" id="adminPass" class="form-input" placeholder="Password">
+            <button class="btn-checkout" onclick="doLogin()">Masuk</button>
+            <button onclick="document.getElementById('loginModal').style.display='none'" style="background:transparent; border:none; color:#888; margin-top:10px; cursor:pointer;">Batal</button>
+        </div>
+    </div>
+
+    <!-- PRODUCT MODAL -->
+    <div class="modal" id="productModal">
+        <div class="modal-box">
+            <h3 id="modalTitle">Tambah/Edit Produk</h3>
+            <input type="hidden" id="pId">
+            <input type="text" id="pName" class="form-input" placeholder="Nama Produk">
+            <select id="pCat" class="form-input">
+                <option value="Nugget">Nugget</option>
+                <option value="Sosis">Sosis</option>
+                <option value="Daging">Daging</option>
+                <option value="Snack">Snack</option>
+            </select>
+            <input type="number" id="pPrice" class="form-input" placeholder="Harga">
+            <input type="text" id="pImg" class="form-input" placeholder="URL Gambar">
+            <button class="btn-checkout" onclick="saveProduct()">Simpan</button>
+            <button class="btn-checkout" onclick="deleteProduct()" style="background:red; margin-top:5px;" id="btnDelete">Hapus</button>
+            <button onclick="document.getElementById('productModal').style.display='none'" style="width:100%; margin-top:10px; background:transparent; border:none; color:#fff;">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        let products = [];
+        let cart = [];
+        let isAdmin = false;
+
+        // --- 1. KOMUNIKASI KE GO SERVER ---
+        
+        async function loadProducts() {
+            try {
+                const res = await fetch('/api/products');
+                products = await res.json();
+                render(products);
+            } catch (err) {
+                console.error("Gagal ambil data", err);
+            }
+        }
+
+        async function saveProduct() {
+            const data = {
+                id: parseInt(document.getElementById('pId').value) || 0,
+                name: document.getElementById('pName').value,
+                category: document.getElementById('pCat').value,
+                price: parseInt(document.getElementById('pPrice').value),
+                img: document.getElementById('pImg').value
+            };
+
+            await fetch('/api/product/save', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+
+            document.getElementById('productModal').style.display = 'none';
+            loadProducts();
+        }
+
+        async function deleteProduct() {
+            const id = document.getElementById('pId').value;
+            if(!confirm("Hapus produk ini?")) return;
+
+            await fetch(`/api/product/delete?id=${id}`); // GET delete for simplicity
+            document.getElementById('productModal').style.display = 'none';
+            loadProducts();
+        }
+
+        async function doLogin() {
+            const pass = document.getElementById('adminPass').value;
+            const res = await fetch('/api/login', {
+                method: 'POST',
+                body: JSON.stringify({ password: pass })
+            });
+
+            if (res.ok) {
+                isAdmin = true;
+                document.getElementById('appBody').classList.add('show-admin');
+                document.getElementById('loginModal').style.display = 'none';
+                render(products); // Re-render untuk munculkan tombol edit
+                alert("Login Berhasil! Mode Admin Aktif.");
+            } else {
+                alert("Password Salah!");
+            }
+        }
+
+        // --- 2. LOGIKA TAMPILAN (FRONTEND) ---
+
+        function render(data) {
+            const container = document.getElementById('container');
+            container.innerHTML = '';
+            data.forEach(p => {
+                let adminBtn = isAdmin ? `<div class="btn-edit-card" onclick="openProductModal(${p.id}, event)"><i class="fas fa-pen"></i></div>` : '';
+                
+                container.innerHTML += `
+                    <div class="product-card" onclick="addToCart(${p.id})">
+                        ${adminBtn}
+                        <img src="${p.img || 'https://via.placeholder.com/100'}" onerror="this.src='https://via.placeholder.com/100'">
+                        <h4>${p.name}</h4>
+                        <div style="color:var(--primary)">Rp ${p.price.toLocaleString()}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function addToCart(id) {
+            const p = products.find(x => x.id == id);
+            const exist = cart.find(x => x.id == id);
+            if(exist) exist.qty++; else cart.push({...p, qty:1});
+            updateCart();
+        }
+
+        function updateCart() {
+            const list = document.getElementById('cartList');
+            list.innerHTML = '';
+            let total = 0;
+            cart.forEach(c => {
+                total += c.price * c.qty;
+                list.innerHTML += `<div class="cart-item">
+                    <span>${c.name} (${c.qty}x)</span>
+                    <span>Rp ${(c.price * c.qty).toLocaleString()}</span>
+                </div>`;
+            });
+            document.getElementById('totalPrice').innerText = 'Rp ' + total.toLocaleString();
+        }
+
+        function checkout() {
+            if(cart.length === 0) return alert("Keranjang kosong!");
+            let msg = "Halo Aulia Frozen, order:%0A";
+            cart.forEach(c => msg += `- ${c.name} (${c.qty}x)%0A`);
+            window.open(`https://wa.me/6281234567890?text=${msg}`);
+        }
+
+        // Modals
+        function openLoginModal() { document.getElementById('loginModal').style.display = 'flex'; }
+        function openProductModal(id = 0, e) {
+            if(e) e.stopPropagation();
+            document.getElementById('productModal').style.display = 'flex';
+            
+            if(id > 0) {
+                const p = products.find(x => x.id == id);
+                document.getElementById('pId').value = p.id;
+                document.getElementById('pName').value = p.name;
+                document.getElementById('pPrice').value = p.price;
+                document.getElementById('pImg').value = p.img;
+                document.getElementById('modalTitle').innerText = "Edit Produk";
+                document.getElementById('btnDelete').style.display = 'block';
+            } else {
+                document.getElementById('pId').value = 0;
+                document.getElementById('pName').value = "";
+                document.getElementById('pPrice').value = "";
+                document.getElementById('pImg').value = "";
+                document.getElementById('modalTitle').innerText = "Tambah Produk";
+                document.getElementById('btnDelete').style.display = 'none';
+            }
+        }
+
+        function filterCategory(cat) {
+            if(cat === 'all') render(products);
+            else render(products.filter(p => p.category === cat));
+        }
+
+        function searchProduct(val) {
+            render(products.filter(p => p.name.toLowerCase().includes(val.toLowerCase())));
+        }
+
+        // Init
+        loadProducts();
+        
+        // Slider Animation
+        let slideIdx = 0;
+        setInterval(() => {
+            const slides = document.querySelectorAll('.slide');
+            slides.forEach(s => s.classList.remove('active'));
+            slideIdx = (slideIdx + 1) % slides.length;
+            slides[slideIdx].classList.add('active');
+        }, 4000);
+    </script>
+</body>
+</html>
